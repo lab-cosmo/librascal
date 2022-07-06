@@ -1,8 +1,10 @@
 import logging
+from ase import Atoms
 import numpy as np
 from .io import BaseIO
 from ..models.sparse_points import SparsePoints
 from ..representations.spherical_invariants import SphericalInvariants
+from ..neighbourlist import retrieve_features_ase_atoms
 
 LOGGER = logging.getLogger(__name__)
 
@@ -158,7 +160,7 @@ def _split_feature_matrix_by_species(managers, X, sps):
 
     Parameters
     ----------
-    managers : AtomsList
+    managers : AtomsList or list(ase.Atoms)
         list of atomic structures
     X : np.ndarray (2-D)
         feature matrix computed from managers; rows must correspond to atoms
@@ -180,11 +182,40 @@ def _split_feature_matrix_by_species(managers, X, sps):
     X_per_species = {}
     global_species_list = []
     for structure in managers:
-        global_species_list.extend([atom.atom_type for atom in structure])
+        if isinstance(structure, Atoms):
+            global_species_list.extend(structure.get_atomic_numbers())
+        else:
+            # Assuming rascal StructureManagerCollection
+            global_species_list.extend([atom.atom_type for atom in structure])
     global_species_list = np.array(global_species_list)
     for sp in sps:
         X_per_species[sp] = X[global_species_list == sp]
     return X_per_species
+
+
+class AtomsListWrapper:
+
+    """Thin wrapper around a list of ASE Atoms objects to make it
+    compatible with the Filter utilities
+    """
+
+    def __init__(self, atoms_list):
+        self.atoms_list = atoms_list
+
+    def __iter__(self):
+        return iter(self.atoms_list)
+
+    def get_features(self, representation_key):
+        """Get the features stored in the list of atoms
+
+        See librascal.neighbourlist.store_features_ase_atoms() for
+        information on how to store the features in the first place
+
+        Instead of a representation manager, takes a simple string key
+        that is used to retrieve the features from the ASE Atoms'
+        arrays dictionaries
+        """
+        return retrieve_features_ase_atoms(self.atoms_list, representation_key)
 
 
 class Filter(BaseIO):
@@ -326,10 +357,13 @@ class Filter(BaseIO):
 
         Returns
         -------
-        SparsePoints or list(int) or dict
+        SparsePoints or 2-d array or dict
             Selected samples.  The format depends on self.act_on - if it is
             "sample" or "sample per species", then a SparsePoints instance
-            is directly returned.  If it is "feature", then it is a dictionary
+            is directly returned (in the case that 'managers' is a rascal
+            StructureManagerCollection -- if it is a AtomsListWrapper, the
+            sparse feature matrix itself is returned).
+            If it is "feature", then it is a dictionary
             containing the "coefficient_subselection" key that can be directly
             passed to the SphericalInvariants constructor.
 
@@ -360,21 +394,36 @@ class Filter(BaseIO):
                 key: val[: n_select[key]]
                 for key, val in self.selected_sample_ids_by_sp.items()
             }
-            self.selected_ids = _indices_perspecies_manager_to_perstructure(
-                managers, selected_ids_by_sp, sps
-            )
-            sparse_points = SparsePoints(self._representation)
-            sparse_points.extend(managers, self.selected_ids)
+            if isinstance(managers, AtomsListWrapper):
+                X = managers.get_features(self._representation)
+                X_by_sp = _split_feature_matrix_by_species(managers, X, sps)
+                # This splits the sparse points by species, which is what the
+                # internal rascal version does anyway
+                sparse_points = dict()
+                for sp in sps:
+                    sparse_points[sp] = X_by_sp[sp][selected_ids_by_sp[sp]]
+            else:
+                # Assuming rascal StructureManagerCollection
+                self.selected_ids = _indices_perspecies_manager_to_perstructure(
+                    managers, selected_ids_by_sp, sps
+                )
+                sparse_points = SparsePoints(self._representation)
+                sparse_points.extend(managers, self.selected_ids)
             return sparse_points
         elif self.act_on == "sample":
             selected_ids_global = self.selected_sample_ids[:n_select]
-            self.selected_ids = _indices_manager_to_perstructure(
-                managers, selected_ids_global
-            )
-            # The sparse points will be reordered since they're not per-species
-            # but the resulting object is still usable
-            sparse_points = SparsePoints(self._representation)
-            sparse_points.extend(managers, self.selected_ids)
+            if isinstance(managers, AtomsListWrapper):
+                X = managers.get_features(self._representation)
+                sparse_points = X[selected_ids_global]
+            else:
+                # Assuming rascal StructureManagerCollection
+                self.selected_ids = _indices_manager_to_perstructure(
+                    managers, selected_ids_global
+                )
+                # The sparse points will be reordered since they're not per-species
+                # but the resulting object is still usable
+                sparse_points = SparsePoints(self._representation)
+                sparse_points.extend(managers, self.selected_ids)
             return sparse_points
         elif self.act_on == "feature":
             if not isinstance(self._representation, SphericalInvariants):

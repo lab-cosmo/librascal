@@ -2,3 +2,4 @@
 *.ipynb diff=ipynb
 
 examples/optimized_radial_basis_functions.ipynb filter= diff=
+examples/zundel_i-PI.ipynb filter= diff=

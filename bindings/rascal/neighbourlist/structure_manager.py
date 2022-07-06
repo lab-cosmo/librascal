@@ -222,6 +222,75 @@ class AtomsList(object):
         return self.managers.get_distances()
 
 
+def store_features_ase_atoms(atoms_list, feature_matrix, key="features"):
+    """Store a feature matrix directly into a list of ASE Atoms
+
+    This helps with compatibility and portability outside librascal
+
+    Parameters
+    ----------
+    atoms_list: list(ase.Atoms)
+        List of ASE Atoms to store the features into
+
+    feature_matrix: np.ndarray, NxQ
+        Array of (atom-wise) features calculated for the atoms list.
+        First index is atoms, concatenated across structures.
+        Second index is features.
+
+    key : str
+        Dictionary key under which to store the features.
+        WARNING: If features are already present under this key,
+        they will be overwritten!
+
+    Returns
+    -------
+    Returns the modified atoms list, but note that this also modifies
+    the atoms list directly!
+    """
+    offset = 0
+    for structure in atoms_list:
+        natoms = len(structure)
+        # TODO maybe this should be done with Atoms.add_array() or similar
+        structure.arrays[key] = feature_matrix[offset : offset + natoms]
+        offset += natoms
+    return atoms_list
+
+
+def retrieve_features_ase_atoms(atoms_list, key="features"):
+    """Retrieve a feature matrix stored in a list of ASE Atoms
+
+    Format is expected as stored by store_features_ase_atoms()
+
+    Parameters
+    ----------
+    atoms_list: list(ase.Atoms)
+        List of ASE Atoms to store the features into
+
+    key : str
+        Dictionary key under which the features are stored.
+
+    Returns
+    -------
+    feature_matrix: np.ndarray, NxQ
+        Array of (atom-wise) features calculated for the atoms list.
+        First index is atoms, concatenated across structures.
+        Second index is features.
+
+    Raises
+    ------
+    IndexError
+        If the given key does not exist in one or more of the structures
+        (the first structure with the missing key is indicated)
+
+    """
+    features_matrix = []
+    for idx, structure in enumerate(atoms_list):
+        try:
+            features_matrix.append(structure.arrays[key])
+        except IndexError as ide:
+            raise IndexError(f"Key not found in structure number {idx:d}") from ide
+    return np.concatenate(features_matrix)
+
 def get_neighbourlist(structure, options):
     manager = NeighbourListFactory(options)
     manager.update(**structure)

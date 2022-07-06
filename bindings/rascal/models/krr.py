@@ -10,8 +10,144 @@ Public functions:
 from ..utils import BaseIO
 from ..lib import compute_sparse_kernel_gradients, compute_sparse_kernel_neg_stress
 
+import scipy
 import numpy as np
 import ase
+
+
+class SparseGPRSolver:
+    """
+    A few quick implementation notes, docs to be done.
+
+    This is meant to solve the sparse GPR problem
+    b = (KNM.T@KNM + reg*KMM)^-1 @ KNM.T@y
+
+    The inverse needs to be stabilized with application of a numerical jitter,
+    that is expressed as a fraction of the largest eigenvalue of KMM
+
+
+    """
+
+    def __init__(
+        self, KMM, regularizer=1, jitter=0, solver="RKHS", relative_jitter=True
+    ):
+
+        self.solver = solver
+        self.KMM = KMM
+        self.relative_jitter = relative_jitter
+
+        self._nM = len(KMM)
+        if self.solver == "RKHS" or self.solver == "RKHS-QR":
+            self._vk, self._Uk = scipy.linalg.eigh(KMM)
+            self._vk = self._vk[::-1]
+            self._Uk = self._Uk[:, ::-1]
+        elif self.solver == "QR" or self.solver == "Normal":
+            # gets maximum eigenvalue of KMM to scale the numerical jitter
+            self._KMM_maxeva = scipy.sparse.linalg.eigsh(
+                KMM, k=1, return_eigenvectors=False
+            )[0]
+        else:
+            raise ValueError(
+                "Solver ",
+                solver,
+                " not supported. Possible values are [RKHS, RKHS-QR, QR, Normal].",
+            )
+        if relative_jitter:
+            if self.solver == "RKHS" or self.solver == "RKHS-QR":
+                self._jitter_scale = self._vk[0]
+            elif self.solver == "QR" or self.solver == "Normal":
+                self._jitter_scale = self._KMM_maxeva
+        else:
+            self._jitter_scale = 1.0
+        self.set_regularizers(regularizer, jitter)
+
+    def set_regularizers(self, regularizer=1.0, jitter=0.0):
+        self.regularizer = regularizer
+        self.jitter = jitter
+        if self.solver == "RKHS" or self.solver == "RKHS-QR":
+            self._nM = len(np.where(self._vk > self.jitter * self._jitter_scale)[0])
+            self._PKPhi = self._Uk[:, : self._nM] * 1 / np.sqrt(self._vk[: self._nM])
+        elif self.solver == "QR":
+            self._VMM = scipy.linalg.cholesky(
+                self.regularizer * self.KMM
+                + np.eye(self._nM) * self._jitter_scale * self.jitter
+            )
+        self._Cov = np.zeros((self._nM, self._nM))
+        self._KY = None
+
+    def partial_fit(self, KNM, Y, accumulate_only=False):
+
+        if len(Y) > 0:
+            # only accumulate if we are passing data
+            if len(Y.shape) == 1:
+                Y = Y[:, np.newaxis]
+            if self.solver == "RKHS":
+                Phi = KNM @ self._PKPhi
+            elif self.solver == "Normal":
+                Phi = KNM
+            else:
+                raise ValueError(
+                    "Partial fit can only be realized with solver = [RKHS, Normal]"
+                )
+            if self._KY is None:
+                self._KY = np.zeros((self._nM, Y.shape[1]))
+
+            self._Cov += Phi.T @ Phi
+            self._KY += Phi.T @ Y
+
+        # do actual fit if called with empty array or if asked
+        if len(Y) == 0 or (not accumulate_only):
+            if self.solver == "RKHS":
+                self._weights = self._PKPhi @ scipy.linalg.solve(
+                    self._Cov + np.eye(self._nM) * self.regularizer,
+                    self._KY,
+                    assume_a="pos",
+                )
+            elif self.solver == "Normal":
+                self._weights = scipy.linalg.solve(
+                    self._Cov
+                    + self.regularizer * self.KMM
+                    + np.eye(self.KMM.shape[0]) * self.jitter * self._jitter_scale,
+                    self._KY,
+                    assume_a="pos",
+                )
+
+    def fit(self, KNM, Y):
+
+        if len(Y.shape) == 1:
+            Y = Y[:, np.newaxis]
+        if self.solver == "RKHS":
+            Phi = KNM @ self._PKPhi
+            self._weights = self._PKPhi @ scipy.linalg.solve(
+                Phi.T @ Phi + np.eye(self._nM) * self.regularizer,
+                Phi.T @ Y,
+                assume_a="pos",
+            )
+        elif self.solver == "RKHS-QR":
+            A = np.vstack(
+                [KNM @ self._PKPhi, np.sqrt(self.regularizer) * np.eye(self._nM)]
+            )
+            Q, R = np.linalg.qr(A)
+            self._weights = self._PKPhi @ scipy.linalg.solve_triangular(
+                R, Q.T @ np.vstack([Y, np.zeros((self._nM, Y.shape[1]))])
+            )
+        elif self.solver == "QR":
+            A = np.vstack([KNM, self._VMM])
+            Q, R = np.linalg.qr(A)
+            self._weights = scipy.linalg.solve_triangular(
+                R, Q.T @ np.vstack([Y, np.zeros((KNM.shape[1], Y.shape[1]))])
+            )
+        elif self.solver == "Normal":
+            self._weights = scipy.linalg.solve(
+                KNM.T @ KNM
+                + self.regularizer * self.KMM
+                + np.eye(self._nM) * self.jitter * self._jitter_scale,
+                KNM.T @ Y,
+                assume_a="pos",
+            )
+
+    def predict(self, KTM):
+        return KTM @ self._weights
 
 
 class KRR(BaseIO):
@@ -32,6 +168,7 @@ class KRR(BaseIO):
     self_contributions : dictionary
         map atomic number to the property baseline, e.g. isolated atoms
         energies when the model has been trained on total energies.
+        None to avoid computing a baseline
 
     description : string
         User-defined string used to describe the model for future reference
@@ -46,7 +183,7 @@ class KRR(BaseIO):
         weights,
         kernel,
         X_train,
-        self_contributions,
+        self_contributions=None,
         description="KRR potential model",
         units=None,
     ):
@@ -84,9 +221,14 @@ class KRR(BaseIO):
             Y0 = np.zeros(n_centers)
             i_center = 0
             for manager in managers:
-                for center in manager:
-                    Y0[i_center] = self.self_contributions[center.atom_type]
-                    i_center += 1
+                if isinstance(manager, ase.Atoms):
+                    for sp in manager.get_atomic_numbers():
+                        Y0[i_center] = self.self_contributions[sp]
+                        i_center += 1
+                else:
+                    for center in manager:
+                        Y0[i_center] = self.self_contributions[center.atom_type]
+                        i_center += 1
         return Y0
 
     def predict(self, managers, KNM=None):
@@ -112,12 +254,16 @@ class KRR(BaseIO):
                 raise ValueError(
                     "KNM size mismatch {}!={}".format(len(managers), KNM.shape[0])
                 )
-            elif self.X_train.size() != KNM.shape[1]:
+            # This works whether X_train is a SparsePoints or just a plain array
+            elif len(self.X_train) != KNM.shape[1]:
                 raise ValueError(
                     "KNM size mismatch {}!={}".format(self.X_train.size(), KNM.shape[1])
                 )
             kernel = KNM
-        Y0 = self._get_property_baseline(managers)
+        Y0 = 0
+        if self.self_contributions is not None:
+            Y0 = self._get_property_baseline(managers)
+
         return Y0 + np.dot(kernel, self.weights).reshape((-1))
 
     def predict_forces(self, managers, KNM=None):
@@ -139,6 +285,10 @@ class KRR(BaseIO):
         if self.kernel.kernel_type != "Sparse":
             raise NotImplementedError(
                 "force prediction only implemented for kernels with kernel_type=='Sparse'"
+            )
+        if self.kernel.target_type != "Structure":
+            raise NotImplementedError(
+                "force prediction only implemented for kernels with target_type=='Structure'"
             )
         if KNM is None:
             rep = self.kernel._representation
@@ -164,6 +314,31 @@ class KRR(BaseIO):
             gradients = np.dot(KNM, self.weights).reshape((-1, 3))
 
         return -gradients
+
+    def predict_forces_with_gradient_kernel(self, managers, KNM_grad=None):
+        """Predict forces the "slow" way, with explicit gradient kernel
+
+        Provided for compatibility with externally-computed features,
+        at least until we can figure out a consistent backpropagation
+        interface
+        """
+        if KNM_grad is None:
+            rep = self.kernel._representation
+            KNM_grad = self.kernel(managers, self.X_train, (True, False))
+        n_atoms = 0
+        for manager in managers:
+            n_atoms += len(manager)
+        if 3 * n_atoms != KNM.shape[0]:
+            raise ValueError(
+                "KNM_grad size mismatch {}!={}".format(3 * n_atoms, KNM_grad.shape[0])
+            )
+        elif self.X_train.size() != KNM.shape[1]:
+            raise ValueError(
+                "KNM_grad size mismatch {}!={}".format(
+                    self.X_train.size(), KNM_grad.shape[1]
+                )
+            )
+        return -1 * (KNM_grad @ self.weights).reshape((-1, 3))
 
     def predict_stress(self, managers, KNM=None):
         """Predict gradients w.r.t cell parameters, e.g. stress, associated with the atomic structures in managers.
@@ -359,6 +534,7 @@ def train_gap_model(
     X_sparse,
     y_train,
     self_contributions,
+    solver="Normal",
     grad_train=None,
     lambdas=None,
     jitter=1e-8,
@@ -433,6 +609,15 @@ def train_gap_model(
     jitter : double, optional
         small jitter for the numerical stability of solving the linear system,
         by default 1e-8
+    solver: string, optional
+        method used to solve the sparse KRR equations.
+        "Normal" uses a least-squares solver for the normal equations:
+           (K_NM.T@K_NM + K_MM)^(-1) K_NM.T@Y
+        "RKHS" computes first the reproducing kernel features by diagonalizing K_MM
+        and computing P_NM = K_NM @ U_MM @ Lam_MM^(-1.2) and then solves the linear
+        problem for those (which is usually better conditioned)
+           (P_NM.T@P_NM + 1)^(-1) P_NM.T@Y
+        by default, "Normal"
 
     Returns
     -------
@@ -468,15 +653,12 @@ def train_gap_model(
         F /= lambdas[1] / delta
         Y = np.vstack([Y, F])
 
-    KMM[np.diag_indices_from(KMM)] += jitter
+    ssolver = SparseGPRSolver(
+        KMM, regularizer=1, jitter=jitter, solver=solver, relative_jitter=False
+    )  # in current implementation KMM incorporates regularization so it's better to use an absolute jitter value
+    ssolver.fit(KNM, Y)
+    model = KRR(ssolver._weights, kernel, X_sparse, self_contributions)
 
-    K = KMM + np.dot(KNM.T, KNM)
-    Y = np.dot(KNM.T, Y)
-    weights = np.linalg.lstsq(K, Y, rcond=None)[0]
-    model = KRR(weights, kernel, X_sparse, self_contributions)
-
-    # avoid memory clogging
-    del K, KMM
-    K, KMM = [], []
+    del KNM, KMM, solver
 
     return model
