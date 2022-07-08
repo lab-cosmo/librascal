@@ -17,7 +17,8 @@ nbsphinx>=0.8.6
 pygments>=2.4.1
 # Developers tools for linting and formatting
 cpplint==1.5.5
-black==20.8b1
+# Earlier versions are broken with latest Click (??)
+black>=22.3.0
 # Developers tools - data generation scripts
 ase
 mpmath

@@ -291,6 +291,7 @@ def retrieve_features_ase_atoms(atoms_list, key="features"):
             raise IndexError(f"Key not found in structure number {idx:d}") from ide
     return np.concatenate(features_matrix)
 
+
 def get_neighbourlist(structure, options):
     manager = NeighbourListFactory(options)
     manager.update(**structure)
