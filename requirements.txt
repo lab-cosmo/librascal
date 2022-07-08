@@ -9,11 +9,11 @@ matplotlib
 # Developers tools for compiling documentation
 sphinx>=2.1.2,<=4.0.2
 breathe>=4.14.1
-# Jinja2 v3 breaks nbsphinx
-jinja2==2.11.3
+jinja2
 sphinx_rtd_theme
 # notebook tutorials
-nbsphinx>=0.8.1
+# need at least this version of nbsphinx, otherwise breaks w/ jinja2 v3
+nbsphinx>=0.8.6
 pygments>=2.4.1
 # Developers tools for linting and formatting
 cpplint==1.5.5
