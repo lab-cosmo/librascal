@@ -158,11 +158,11 @@ def compute_print_residuals(
     pred_forces = model.predict_forces(soaps, kernel_forces)
     energy_resids = pred_energies - energies
     force_resids = pred_forces - forces.reshape((-1, 3))
-    energy_rmse = np.sqrt(np.mean(energy_resids ** 2))
+    energy_rmse = np.sqrt(np.mean(energy_resids**2))
     energy_rmse_peratom = np.sqrt(
         np.mean((energy_resids / np.array(natoms_perstruct)) ** 2)
     )
-    force_rmse = np.sqrt(np.sum(force_resids ** 2) / np.sum(natoms_perstruct))
+    force_rmse = np.sqrt(np.sum(force_resids**2) / np.sum(natoms_perstruct))
     if do_print:
         print(
             f"Energy RMSE: {energy_rmse:.06f} eV ({energy_rmse_peratom*1000:.06f} eV/atom)"
