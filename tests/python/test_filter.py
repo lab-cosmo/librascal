@@ -232,7 +232,7 @@ class FilterTest:
         compressor = self._filter(self.repr, n_sparses, act_on="sample per species")
         with self.assertRaisesRegex(
             ValueError,
-            r"Found array with 0 sample\(s\) \(shape=\(0, 4480\)\) while a minimum of 1 is required.",
+            r"Found array with 0 sample\(s\) \(shape=\(0, 4480\)\) while a minimum of 2 is required.",
         ):
             compressor.select_and_filter(self.managers)
 
