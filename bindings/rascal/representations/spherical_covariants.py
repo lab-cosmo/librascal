@@ -314,10 +314,10 @@ class SphericalCovariants(BaseIO):
                         * self.hypers["max_angular"]
                     )
                 n_col *= 2 * self.hypers["covariant_lambda"] + 1
-                return int(n_col * n_species ** 2 * self.hypers["max_radial"] ** 2)
+                return int(n_col * n_species**2 * self.hypers["max_radial"] ** 2)
             else:
                 return (
-                    n_species ** 2
+                    n_species**2
                     * self.hypers["max_radial"] ** 2
                     * int(
                         (
