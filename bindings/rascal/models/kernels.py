@@ -189,6 +189,7 @@ class KernelDirect(BaseIO):
         kernel_name="Cosine",
         target_type="Atom",
         features_key="features",
+        grad_suffix="_grad",
     ):
         """Make a kernel function with the given parameters
 
@@ -213,6 +214,10 @@ class KernelDirect(BaseIO):
             For structure kernels, which key is used to access the
             features in the provided ASE Atoms objects.
             This can be modified in the kernel __call__() as well.
+        grad_suffix : str
+            How to access the feature gradients: The 'features_key' is
+            appended with the given suffix (default '_grad') and used as
+            the new key to access the arrays dictionary
 
         Returns
         -------
@@ -227,6 +232,7 @@ class KernelDirect(BaseIO):
         self.kernel_name = kernel_name
         self.target_type = target_type
         self.features_key = features_key
+        self.grad_suffix = grad_suffix
         self.kernel_power = kernel_power
         self._representation = representation
 
@@ -240,7 +246,7 @@ class KernelDirect(BaseIO):
         other_features=None,
         grad=False,
         features_key=None,
-        grad_suffix="_grad",
+        grad_suffix=None,
     ):
         """Compute the kernel between the feature matrices
 
@@ -256,20 +262,23 @@ class KernelDirect(BaseIO):
             Second set of features (normally, the sparse points)
             If not provided, the kernel is computed between the
             first feature set and itself.
-        features_key : str
+        features_key : str, optional
             For structure kernels, the dictionary key used to access
             features in the ASE Atoms objects.  If provided, overrides the key
             provided in the constructor.
-        grad_suffix : str
+        grad_suffix : str, optional
             How to access the feature gradients: The 'features_key' is
             appended with the given suffix (default '_grad') and used as
-            the new key to access the arrays dictionary
+            the new key to access the arrays dictionary.
+            If provided, overrides the key provided in the constructor.
         grad : bool
             Whether to compute the _gradient_ of the kernel with respect
             to atomic positions.  This operation is only applied to the
             first set of features, since the double-gradient kernel is
             practically never used.  Not supported for the self-kernel
             (i.e. if other_features is None).
+            See grad_suffix for information on how the feature gradients
+            (required) are accessed.
 
         Returns
         -------
@@ -286,9 +295,6 @@ class KernelDirect(BaseIO):
         else:
             if self.target_type == "Atom":
                 return (features @ other_features.T) ** self.kernel_power
-            if grad:
-                # TODO implement
-                raise NotImplemented("Gradient kernel WIP, sorry")
             elif self.target_type == "Structure":
                 if not grad:
                     output_kernel = np.empty((len(features), other_features.shape[0]))
@@ -302,6 +308,8 @@ class KernelDirect(BaseIO):
                 # two needs in the future.
                 if features_key is None:
                     features_key = self.features_key
+                if grad_suffix is None:
+                    grad_suffix = self.grad_suffix
                 for structure_idx, structure in enumerate(features):
                     try:
                         structure_features = structure.arrays[features_key]
