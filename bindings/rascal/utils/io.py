@@ -1,6 +1,6 @@
 import os
 import importlib
-from collections import Iterable
+from collections.abc import Iterable
 import numpy as np
 import json
 from copy import deepcopy

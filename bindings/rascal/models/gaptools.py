@@ -9,6 +9,8 @@ import numpy as np
 
 from rascal import models, representations, utils
 from rascal.models.krr import SparseGPRSolver
+from rascal.neighbourlist import store_features_ase_atoms
+from rascal.utils.filter import AtomsListWrapper
 
 WORKDIR = os.getcwd()
 
@@ -110,15 +112,23 @@ def sparsify_environments_barefeats(
             Write the list of sparse points to a file for later use?
             (default False)
 
-    Returns the sparse points as a 2-d numpy array
+    Returns the sparse points as a dict of 2-d numpy arrays, one per
+    central atom species -- concatenate them along the first axis to
+    get a flat array
     """
-    feats_wrapped = store_features_ase_atoms(frames, feature_matrix, "select_features")
+    feats_wrapped = AtomsListWrapper(
+        store_features_ase_atoms(frames, feature_matrix, "select_features")
+    )
     if selection_type.upper() == "CUR":
-        compressor = utils.CURFilter("select_features", n_sparse, act_on="sample per species")
+        compressor = utils.CURFilter(
+            "select_features", n_sparse, act_on="sample per species"
+        )
     elif selection_type.upper() == "FPS":
         # TODO random starting index? by default?
-        compressor = utils.FPSFilter("select_features", n_sparse, act_on="sample per species")
-    sparse_points = compressor.select_and_filter(features)
+        compressor = utils.FPSFilter(
+            "select_features", n_sparse, act_on="sample per species"
+        )
+    sparse_points = compressor.select_and_filter(feats_wrapped)
     if save_sparsepoints:
         np.save(os.path.join(WORKDIR, "sparsepoints"), sparse_points)
     return sparse_points
