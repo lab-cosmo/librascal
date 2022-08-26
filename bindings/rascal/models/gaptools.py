@@ -86,7 +86,7 @@ def sparsify_environments(
 
 
 def sparsify_environments_barefeats(
-    feature_matrix, n_sparse, selection_type="CUR", save_sparsepoints=False
+    feature_matrix, frames, n_sparse, selection_type="CUR", save_sparsepoints=False
 ):
     """Sparsify the feature matrix and just return the selected indices
 
@@ -94,6 +94,10 @@ def sparsify_environments_barefeats(
         feature_matrix
                     Features to use for sparsification, as a 2-D numpy
                     array (environments along the first dimension)
+        frames      List of ASE Atoms objects (to indicate atom species)
+                    Warning: The features are stored here under the key
+                    "select_features", overwriting anything already stored
+                    under that arrays key!
         n_sparse    Number of sparse points per species, in the form of
                     a dict mapping atomic number to number of requested
                     sparse points
@@ -105,14 +109,19 @@ def sparsify_environments_barefeats(
         save_sparsepoints
             Write the list of sparse points to a file for later use?
             (default False)
+
+    Returns the sparse points as a 2-d numpy array
     """
-    # Probably need to write a thin wrapper of AtomsList, actually,
-    # that works with the filter utils -- it only needs to emulate
-    # returning atom types (might actually want to make a separate
-    # split-species function) and returning features.
-    # All this is so that selecting sparse points per central atom
-    # species is possible; otherwise it's an easy call to CUR/FPS.
-    pass
+    feats_wrapped = store_features_ase_atoms(frames, feature_matrix, "select_features")
+    if selection_type.upper() == "CUR":
+        compressor = utils.CURFilter("select_features", n_sparse, act_on="sample per species")
+    elif selection_type.upper() == "FPS":
+        # TODO random starting index? by default?
+        compressor = utils.FPSFilter("select_features", n_sparse, act_on="sample per species")
+    sparse_points = compressor.select_and_filter(features)
+    if save_sparsepoints:
+        np.save(os.path.join(WORKDIR, "sparsepoints"), sparse_points)
+    return sparse_points
 
 
 def build_sparse_list(list_natoms, absolute_index_list):
