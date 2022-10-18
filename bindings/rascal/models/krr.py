@@ -10,8 +10,191 @@ Public functions:
 from ..utils import BaseIO
 from ..lib import compute_sparse_kernel_gradients, compute_sparse_kernel_neg_stress
 
+import scipy
 import numpy as np
 import ase
+import warnings
+
+
+class SparseGPRSolver:
+    """
+    A few quick implementation notes, docs to be done.
+
+    This is meant to solve the sparse GPR problem::
+
+        b = (KNM.T@KNM + reg*KMM)^-1 @ KNM.T@y
+
+    The inverse needs to be stabilized with application of a numerical jitter,
+    that is expressed as a fraction of the largest eigenvalue of KMM
+
+    Parameters
+    ----------
+    KMM : numpy.ndarray
+        KNM matrix
+    regularizer : float
+        regularizer
+    jitter : float
+        numerical jitter to stabilize fit
+    solver : {'RKHS-QR', 'RKHS', 'QR', 'solve', 'lstsq'}
+        Method to solve the sparse KRR equations.
+
+        * RKHS-QR: TBD
+        * RKHS: Compute first the reproducing kernel features by diagonalizing K_MM
+          and computing `P_NM = K_NM @ U_MM @ Lam_MM^(-1.2)` and then solves the linear
+          problem for those (which is usually better conditioned)::
+
+              (P_NM.T@P_NM + 1)^(-1) P_NM.T@Y
+
+        * QR: TBD
+        * solve: Uses `scipy.linalg.solve` for the normal equations::
+
+              (K_NM.T@K_NM + K_MM)^(-1) K_NM.T@Y
+
+        * lstsq: require rcond value. Use `numpy.linalg.solve(rcond=rcond)` for the normal equations::
+
+             (K_NM.T@K_NM + K_MM)^(-1) K_NM.T@Y
+    """
+
+    def __init__(
+        self, KMM, regularizer=1, jitter=0, solver="RKHS", relative_jitter=True
+    ):
+
+        self.solver = solver
+        self.KMM = KMM
+        self.relative_jitter = relative_jitter
+
+        self._nM = len(KMM)
+        if self.solver == "RKHS" or self.solver == "RKHS-QR":
+            self._vk, self._Uk = scipy.linalg.eigh(KMM)
+            self._vk = self._vk[::-1]
+            self._Uk = self._Uk[:, ::-1]
+        elif self.solver == "QR" or self.solver == "solve" or self.solver == "lstsq":
+            # gets maximum eigenvalue of KMM to scale the numerical jitter
+            self._KMM_maxeva = scipy.sparse.linalg.eigsh(
+                KMM, k=1, return_eigenvectors=False
+            )[0]
+        else:
+            raise ValueError(
+                f"Solver {solver} not supported. Possible values "
+                "are 'RKHS', 'RKHS-QR', 'QR', 'solve' or lstsq."
+            )
+        if relative_jitter:
+            if self.solver == "RKHS" or self.solver == "RKHS-QR":
+                self._jitter_scale = self._vk[0]
+            elif (
+                self.solver == "QR" or self.solver == "solve" or self.solver == "lstsq"
+            ):
+                self._jitter_scale = self._KMM_maxeva
+        else:
+            self._jitter_scale = 1.0
+        self.set_regularizers(regularizer, jitter)
+
+    def set_regularizers(self, regularizer=1.0, jitter=0.0):
+        self.regularizer = regularizer
+        self.jitter = jitter
+        if self.solver == "RKHS" or self.solver == "RKHS-QR":
+            self._nM = len(np.where(self._vk > self.jitter * self._jitter_scale)[0])
+            self._PKPhi = self._Uk[:, : self._nM] * 1 / np.sqrt(self._vk[: self._nM])
+        elif self.solver == "QR":
+            self._VMM = scipy.linalg.cholesky(
+                self.regularizer * self.KMM
+                + np.eye(self._nM) * self._jitter_scale * self.jitter
+            )
+        self._Cov = np.zeros((self._nM, self._nM))
+        self._KY = None
+
+    def partial_fit(self, KNM, Y, accumulate_only=False, rcond=None):
+
+        if len(Y) > 0:
+            # only accumulate if we are passing data
+            if len(Y.shape) == 1:
+                Y = Y[:, np.newaxis]
+            if self.solver == "RKHS":
+                Phi = KNM @ self._PKPhi
+            elif self.solver == "solve" or self.solver == "lstsq":
+                Phi = KNM
+            else:
+                raise ValueError(
+                    "Partial fit can only be realized with "
+                    "solver = 'RKHS' or 'solve'"
+                )
+            if self._KY is None:
+                self._KY = np.zeros((self._nM, Y.shape[1]))
+
+            self._Cov += Phi.T @ Phi
+            self._KY += Phi.T @ Y
+
+        # do actual fit if called with empty array or if asked
+        if len(Y) == 0 or (not accumulate_only):
+            if self.solver == "RKHS":
+                self._weights = self._PKPhi @ scipy.linalg.solve(
+                    self._Cov + np.eye(self._nM) * self.regularizer,
+                    self._KY,
+                    assume_a="pos",
+                )
+            elif self.solver == "solve":
+                self._weights = scipy.linalg.solve(
+                    self._Cov
+                    + self.regularizer * self.KMM
+                    + np.eye(self.KMM.shape[0]) * self.jitter * self._jitter_scale,
+                    self._KY,
+                    assume_a="pos",
+                )
+            elif self.solver == "lstsq":
+                self._weights = np.linalg.lstsq(
+                    self._Cov
+                    + self.regularizer * self.KMM
+                    + np.eye(self.KMM.shape[0]) * self.jitter * self._jitter_scale,
+                    self._KY,
+                    rcond=rcond,
+                )[0]
+
+    def fit(self, KNM, Y, rcond=None):
+
+        if len(Y.shape) == 1:
+            Y = Y[:, np.newaxis]
+        if self.solver == "RKHS":
+            Phi = KNM @ self._PKPhi
+            self._weights = self._PKPhi @ scipy.linalg.solve(
+                Phi.T @ Phi + np.eye(self._nM) * self.regularizer,
+                Phi.T @ Y,
+                assume_a="pos",
+            )
+        elif self.solver == "RKHS-QR":
+            A = np.vstack(
+                [KNM @ self._PKPhi, np.sqrt(self.regularizer) * np.eye(self._nM)]
+            )
+            Q, R = np.linalg.qr(A)
+            self._weights = self._PKPhi @ scipy.linalg.solve_triangular(
+                R, Q.T @ np.vstack([Y, np.zeros((self._nM, Y.shape[1]))])
+            )
+        elif self.solver == "QR":
+            A = np.vstack([KNM, self._VMM])
+            Q, R = np.linalg.qr(A)
+            self._weights = scipy.linalg.solve_triangular(
+                R, Q.T @ np.vstack([Y, np.zeros((KNM.shape[1], Y.shape[1]))])
+            )
+        elif self.solver == "solve":
+            self._weights = scipy.linalg.solve(
+                KNM.T @ KNM
+                + self.regularizer * self.KMM
+                + np.eye(self._nM) * self.jitter * self._jitter_scale,
+                KNM.T @ Y,
+                assume_a="pos",
+            )
+        elif self.solver == "lstsq":
+            self._weights = np.linalg.lstsq(
+                KNM.T @ KNM
+                + self.regularizer * self.KMM
+                + np.eye(self._nM) * self.jitter * self._jitter_scale,
+                KNM.T @ Y,
+                rcond=rcond,
+            )[0]
+        else:
+            ValueError("solver not implemented")
+
+    def predict(self, KTM):
+        return KTM @ self._weights
 
 
 class KRR(BaseIO):
@@ -32,6 +215,7 @@ class KRR(BaseIO):
     self_contributions : dictionary
         map atomic number to the property baseline, e.g. isolated atoms
         energies when the model has been trained on total energies.
+        Use `None` to avoid computing a baseline.
 
     description : string
         User-defined string used to describe the model for future reference
@@ -46,7 +230,7 @@ class KRR(BaseIO):
         weights,
         kernel,
         X_train,
-        self_contributions,
+        self_contributions=None,
         description="KRR potential model",
         units=None,
     ):
@@ -117,7 +301,10 @@ class KRR(BaseIO):
                     "KNM size mismatch {}!={}".format(self.X_train.size(), KNM.shape[1])
                 )
             kernel = KNM
-        Y0 = self._get_property_baseline(managers)
+        Y0 = 0
+        if self.self_contributions is not None:
+            Y0 = self._get_property_baseline(managers)
+
         return Y0 + np.dot(kernel, self.weights).reshape((-1))
 
     def predict_forces(self, managers, KNM=None):
@@ -362,6 +549,8 @@ def train_gap_model(
     grad_train=None,
     lambdas=None,
     jitter=1e-8,
+    solver="lstsq",
+    rcond=None,
 ):
     """
     Defines the procedure to train a SOAP-GAP model [1]:
@@ -433,6 +622,25 @@ def train_gap_model(
     jitter : double, optional
         small jitter for the numerical stability of solving the linear system,
         by default 1e-8
+    solver : {'RKHS-QR', 'RKHS', 'QR', 'solve', 'lstsq'}
+        Method to solve the sparse KRR equations.
+
+        * RKHS-QR: TBD
+        * RKHS: Compute first the reproducing kernel features by diagonalizing K_MM
+          and computing `P_NM = K_NM @ U_MM @ Lam_MM^(-1.2)` and then solves the linear
+          problem for those (which is usually better conditioned)::
+
+              (P_NM.T@P_NM + 1)^(-1) P_NM.T@Y
+
+        * QR: TBD
+        * solve: Uses `scipy.linalg.solve` for the normal equations::
+
+              (K_NM.T@K_NM + K_MM)^(-1) K_NM.T@Y
+
+        * lstsq Uses `numpy.linalg.solve(rcond=rcond)` for the normal equations, requires rcond:
+
+             (K_NM.T@K_NM + K_MM)^(-1) K_NM.T@Y
+    rcond : condition parameter for numpy.linalg.solve, ignored if solver != 'lstsq'
 
     Returns
     -------
@@ -444,6 +652,11 @@ def train_gap_model(
         In Handbook of Materials Modeling (pp. 1–27). Springer, Cham.
         https://doi.org/10.1007/978-3-319-42913-7_68-1
     """
+    if solver == "lstsq" and rcond is None:
+        warnings.warn(
+            "Warning solver = lstsq and rcond=None is deprecated.\
+            Use an other solver or rcond=-1"
+        )
     KMM = kernel(X_sparse)
     Y = y_train.reshape((-1, 1)).copy()
     KNM = KNM_.copy()
@@ -468,15 +681,14 @@ def train_gap_model(
         F /= lambdas[1] / delta
         Y = np.vstack([Y, F])
 
-    KMM[np.diag_indices_from(KMM)] += jitter
+    # in current implementation KMM incorporates regularization so it is
+    # better to use an absolute jitter value
+    ssolver = SparseGPRSolver(
+        KMM, regularizer=1, jitter=jitter, solver=solver, relative_jitter=False
+    )
+    ssolver.fit(KNM, Y, rcond=rcond)
+    model = KRR(ssolver._weights, kernel, X_sparse, self_contributions)
 
-    K = KMM + np.dot(KNM.T, KNM)
-    Y = np.dot(KNM.T, Y)
-    weights = np.linalg.lstsq(K, Y, rcond=None)[0]
-    model = KRR(weights, kernel, X_sparse, self_contributions)
-
-    # avoid memory clogging
-    del K, KMM
-    K, KMM = [], []
+    del KNM, KMM
 
     return model
