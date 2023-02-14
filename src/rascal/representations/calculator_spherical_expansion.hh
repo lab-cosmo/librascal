@@ -2469,12 +2469,8 @@ namespace rascal {
       keys_list.emplace_back();
       if (compute_gradients) {
         for (auto neigh : center.pairs_with_self_pair()) {
-          if (!this->neighbour_species.size() || 
-              (this->neighbour_species.size() &&
-              internal::is_element_in(neigh.get_atom_type(), this->neighbour_species))) {
             (void)neigh;  // to avoid compiler warning
             keys_list_grad.emplace_back();
-          }
         }
       }
     }
@@ -2484,16 +2480,12 @@ namespace rascal {
       Key_t center_type{center.get_atom_type()};
 
       for (auto neigh : center.pairs()) {
-        if (!this->neighbour_species.size() || 
-            (this->neighbour_species.size() &&
-            internal::is_element_in(neigh.get_atom_type(), this->neighbour_species))) {
           keys_list[i_center].insert({neigh.get_atom_type()});
           if (manager->is_center_atom(neigh) and IsHalfNL) {
             auto atom_j = neigh.get_atom_j();
             auto j_center = center_tag2idx[atom_j.get_atom_tag()];
             keys_list[j_center].insert(center_type);
           }
-        }
       }
       keys_list[i_center].insert({center_type});
       if (compute_gradients) {
@@ -2501,13 +2493,9 @@ namespace rascal {
                                       keys_list[i_center].end());
         i_grad++;
         for (auto neigh : center.pairs()) {
-          if (!this->neighbour_species.size() || 
-              (this->neighbour_species.size() &&
-              internal::is_element_in(neigh.get_atom_type(), this->neighbour_species))) {
             Key_t neigh_type{neigh.get_atom_type()};
             keys_list_grad[i_grad].insert(neigh_type);
             i_grad++;
-          }
         }
       }  // if (compute_gradients)
       i_center++;
