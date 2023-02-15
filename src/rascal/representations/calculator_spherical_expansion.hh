@@ -2273,13 +2273,17 @@ namespace rascal {
       Key_t center_type{center.get_atom_type()};
 
       // Start the accumulation with the central atom contribution
-      coefficients_center[center_type].col(0) +=
-          radial_integral->template compute_center_contribution(
-              center, center.get_atom_type()) /
-          sqrt(4.0 * PI);
+      if (!this->neighbour_species.size() ||
+          (this->neighbour_species.size() &&
+          internal::is_element_in(center_type, this->neighbour_species))) {
+        coefficients_center[center_type].col(0) +=
+            radial_integral->template compute_center_contribution(
+                center, center.get_atom_type()) /
+            sqrt(4.0 * PI);
+      }
 
       for (auto neigh : center.pairs()) {
-        if (!this->neighbour_species.size() || 
+        if (!this->neighbour_species.size() ||
             (this->neighbour_species.size() &&
             internal::is_element_in(neigh.get_atom_type(), this->neighbour_species))) {
           auto atom_j = neigh.get_atom_j();
