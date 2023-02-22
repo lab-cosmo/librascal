@@ -374,5 +374,119 @@ namespace rascal {
     }  // manager
     return neg_stress_name;
   }
+
+
+  /**
+   * Compute the atomic gradients of a structure w.r.t atomic cell paramaters
+   * using a sparse GPR model. Only SOAP-GAP model is implemented at the moment
+   * (see
+   * @ref SparseKernelImpl<internal::SparseKernelType::GAP>::compute_derivative)
+   *
+   * The point of this function is to provide a faster prediction routine
+   * compared to computing the kernel elements and then multiplying them with
+   * the weights of the model.
+   *
+   * The gradients are attached to the input manager in a Property of
+   * Order 1 with the name
+   * '"kernel: "+kernel_type+" ; "+representation_grad_name+" negative stress;
+   * weight_hash:"+weight_hash' gradients [2*n_managers, 3]
+   *
+   * @tparam StructureManagers should be an iterable over shared pointer
+   *          of structure managers like ManagerCollection
+   * @param sparse_points a SparsePoints* class
+   * @param managers a ManagerCollection or similar collection of
+   * structure managers
+   * @param weights regression weights of the sparse GPR model
+   * @return name used to register the gradients in the managers
+   */
+  template <class Calculator, class StructureManagers, class SparsePoints>
+  std::string compute_sparse_kernel_local_neg_stress(const Calculator & calculator,
+                                               SparseKernel & kernel,
+                                               StructureManagers & managers,
+                                               SparsePoints & sparse_points,
+                                               math::Vector_t & weights) {
+    using Manager_t = typename StructureManagers::Manager_t;
+    using Property_t = typename Calculator::template Property_t<Manager_t>;
+    using PropertyGradient_t =
+        typename Calculator::template PropertyGradient_t<Manager_t>;
+    auto && representation_name{calculator.get_name()};
+    const auto representation_grad_name{calculator.get_gradient_name()};
+    size_t n_centers{0};
+    // find the total number of gradients
+    for (const auto & manager : managers) {
+      n_centers += manager->size();
+    }
+
+    // Voigt order is xx, yy, zz, yz, xz, xy. To compute xx, yy, zz
+    // and yz, xz, xy in one loop over the three spatial dimensions
+    // dK/dr_{x,y,z}, we fill the off-diagonals yz, xz, xy by computing
+    // xz, yx, zy exploiting the symmetry of the stress tensor
+    // thus yx=xy and zx=xz
+    // array accessed by voigt_idx and returns spatial_dim_idx
+    const std::array<std::array<int, 2>, ThreeD> voigt_id_to_spatial_dim = {
+        {             // voigt_idx,  spatial_dim_idx
+         {{4, 2}},    //    xz,            z
+         {{5, 0}},    //    xy,            x
+         {{3, 1}}}};  //    yz,            y
+
+    internal::Hash<math::Vector_t, double> hasher{};
+    auto kernel_type_str = kernel.parameters.at("name").get<std::string>();
+    std::string weight_hash = std::to_string(hasher(weights));
+    std::string pair_grad_atom_i_r_j_name =
+        std::string("kernel: ") + kernel_type_str + std::string(" ; ") +
+        representation_grad_name +
+        std::string(" partial gradients; weight_hash:") + weight_hash;
+    std::string neg_stress_name =
+        std::string("kernel: ") + kernel_type_str + std::string(" ; ") +
+        representation_grad_name +
+        std::string(" negative stress; weight_hash:") + weight_hash;
+
+    for (const auto & manager : managers) {
+      if (kernel_type_str == "GAP") {
+        const auto zeta = kernel.parameters.at("zeta").get<size_t>();
+
+        compute_partial_gradients_gap<Property_t, PropertyGradient_t>(
+            manager, sparse_points, weights, zeta, representation_name,
+            representation_grad_name, pair_grad_atom_i_r_j_name);
+      }
+
+      auto && neg_stress{
+          *manager->template get_property<Property<double, 0, Manager_t, 6>>(
+              neg_stress_name, true, true, true)};
+      if (neg_stress.is_updated()) {
+        continue;
+      }
+
+      neg_stress.resize();
+      neg_stress.setZero();
+
+      auto && pair_grad_atom_i_r_j{*manager->template get_property<
+          Property<double, 2, Manager_t, 1, ThreeD>>(pair_grad_atom_i_r_j_name,
+                                                     true)};
+      for (auto center : manager) {
+        Eigen::Vector3d r_i = center.get_position();
+        // accumulate partial gradients onto gradients
+        for (auto neigh : center.pairs_with_self_pair()) {
+          Eigen::Vector3d r_ji = r_i - neigh.get_position();
+          for (int i_der{0}; i_der < ThreeD; i_der++) {
+            const auto & voigt = voigt_id_to_spatial_dim[i_der];
+            neg_stress(i_der) +=
+                r_ji(i_der) * pair_grad_atom_i_r_j[neigh](i_der);
+            neg_stress(voigt[0]) +=
+                r_ji(voigt[1]) * pair_grad_atom_i_r_j[neigh](i_der);
+          }
+        }
+      }
+      auto manager_root = extract_underlying_manager<0>(manager);
+      json structure_copy = manager_root->get_atomic_structure();
+      auto atomic_structure =
+          structure_copy.template get<AtomicStructure<ThreeD>>();
+      neg_stress[0] /= atomic_structure.get_volume();
+      neg_stress.set_updated_status(true);
+    }  // manager
+    return neg_stress_name;
+  }
+
+
 }  // namespace rascal
 #endif  // SRC_RASCAL_MODELS_SPARSE_KERNEL_PREDICT_HH_
