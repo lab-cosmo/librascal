@@ -423,11 +423,11 @@ namespace rascal {
     // xz, yx, zy exploiting the symmetry of the stress tensor
     // thus yx=xy and zx=xz
     // array accessed by voigt_idx and returns spatial_dim_idx
-    const std::array<std::array<int, 2>, ThreeD> voigt_id_to_spatial_dim = {
-        {             // voigt_idx,  spatial_dim_idx
-         {{4, 2}},    //    xz,            z
-         {{5, 0}},    //    xy,            x
-         {{3, 1}}}};  //    yz,            y
+    //const std::array<std::array<int, 2>, ThreeD> voigt_id_to_spatial_dim = {
+    //    {             // voigt_idx,  spatial_dim_idx
+    //     {{4, 2}},    //    xz,            z
+    //     {{5, 0}},    //    xy,            x
+    //     {{3, 1}}}};  //    yz,            y
 
     internal::Hash<math::Vector_t, double> hasher{};
     auto kernel_type_str = kernel.parameters.at("name").get<std::string>();
@@ -439,7 +439,7 @@ namespace rascal {
     std::string neg_stress_name =
         std::string("kernel: ") + kernel_type_str + std::string(" ; ") +
         representation_grad_name +
-        std::string(" negative stress; weight_hash:") + weight_hash;
+        std::string(" negative local stress; weight_hash:") + weight_hash;
 
     for (const auto & manager : managers) {
       if (kernel_type_str == "GAP") {
@@ -450,8 +450,10 @@ namespace rascal {
             representation_grad_name, pair_grad_atom_i_r_j_name);
       }
 
+      //auto && expansions_coefficients{*manager->template get_property<prop_t>(
+      //    this->get_name(), true, true, ExcludeGhosts)};
       auto && neg_stress{
-          *manager->template get_property<Property<double, 0, Manager_t, 6>>(
+          *manager->template get_property<Property<double, 1, Manager_t, 9>>(
               neg_stress_name, true, true, true)};
       if (neg_stress.is_updated()) {
         continue;
@@ -463,25 +465,37 @@ namespace rascal {
       auto && pair_grad_atom_i_r_j{*manager->template get_property<
           Property<double, 2, Manager_t, 1, ThreeD>>(pair_grad_atom_i_r_j_name,
                                                      true)};
+
+      auto manager_root = extract_underlying_manager<0>(manager);
+      json structure_copy = manager_root->get_atomic_structure();
+      auto atomic_structure =
+          structure_copy.template get<AtomicStructure<ThreeD>>();
+
+      size_t i_center{0};
       for (auto center : manager) {
+        auto && local_neg_stress = neg_stress[center];
         Eigen::Vector3d r_i = center.get_position();
         // accumulate partial gradients onto gradients
         for (auto neigh : center.pairs_with_self_pair()) {
           Eigen::Vector3d r_ji = r_i - neigh.get_position();
           for (int i_der{0}; i_der < ThreeD; i_der++) {
-            const auto & voigt = voigt_id_to_spatial_dim[i_der];
-            neg_stress(i_der) +=
-                r_ji(i_der) * pair_grad_atom_i_r_j[neigh](i_der);
-            neg_stress(voigt[0]) +=
-                r_ji(voigt[1]) * pair_grad_atom_i_r_j[neigh](i_der);
+            for (int k_der{0}; k_der < ThreeD; k_der++) {
+              // HERE YOU CAN DEBUG
+              local_neg_stress(i_der*3 + k_der) +=
+                  r_ji(i_der) * pair_grad_atom_i_r_j[neigh](k_der);
+
+              // ORIGINAL CODE only using one for-loop ofer i_der
+              //const auto & voigt = voigt_id_to_spatial_dim[i_der];
+              //neg_stress(i_der) +=
+              //    r_ji(i_der) * pair_grad_atom_i_r_j[neigh](i_der);
+              //neg_stress(voigt[0]) +=
+              //    r_ji(voigt[1]) * pair_grad_atom_i_r_j[neigh](i_der);
+            }
           }
         }
+        local_neg_stress[i_center] /= atomic_structure.get_volume();
+        i_center++;
       }
-      auto manager_root = extract_underlying_manager<0>(manager);
-      json structure_copy = manager_root->get_atomic_structure();
-      auto atomic_structure =
-          structure_copy.template get<AtomicStructure<ThreeD>>();
-      neg_stress[0] /= atomic_structure.get_volume();
       neg_stress.set_updated_status(true);
     }  // manager
     return neg_stress_name;

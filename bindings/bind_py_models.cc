@@ -201,19 +201,30 @@ namespace rascal {
            math::Vector_t & weights) {
           std::string neg_stress_name = compute_sparse_kernel_local_neg_stress(
               calculator, kernel, managers, sparse_points, weights);
-          math::Matrix_t neg_stress_global{managers.size(), 6};
-          size_t i_manager{0};
+          size_t nb_centers_over_managers{0};
           for (const auto & manager : managers) {
+            for (auto center : manager) {
+              nb_centers_over_managers++;
+            }
+          }
+          math::Matrix_t local_neg_stress{nb_centers_over_managers, 9};
+
+          size_t i_center{0};
+          size_t i_manager_nb_center{0};
+          for (const auto & manager : managers) {
+            i_manager_nb_center = 0;
+            for (auto center : manager) {
+              i_manager_nb_center++;
+            }
             auto && neg_stress{
                 *manager
-                     ->template get_property<Property<double, 0, Manager_t, 6>>(
-                         neg_stress_name, true)};
-            neg_stress_global.block(i_manager, 0, 1, 6) =
-                Eigen::Map<const math::Matrix_t>(neg_stress.view().data(), 1,
-                                                 6);
-            i_manager++;
+                    ->template get_property<Property<double, 1, Manager_t, 9>>(
+                        neg_stress_name, true, true, true)};
+            local_neg_stress.block(i_center, 0, i_manager_nb_center, 9) =
+                Eigen::Map<const math::Matrix_t>(neg_stress.view().data(), 1, 9);
+            i_center += i_manager_nb_center;
           }
-          return neg_stress_global;
+          return local_neg_stress;
         },
         py::call_guard<py::gil_scoped_release>());
   }

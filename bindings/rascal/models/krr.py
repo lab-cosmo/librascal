@@ -398,8 +398,8 @@ class KRR(BaseIO):
                 )
         else:
             if local_stress:
-                raise ValueError("Option local_stress does not work with KNM. 
-                Please set KNM to None.")
+                raise ValueError("Option local_stress does not work with KNM."
+                                 " Please set KNM to None.")
             if 6 * len(managers) != KNM.shape[0]:
                 raise ValueError(
                     "KNM size mismatch {}!={}".format(6 * len(managers), KNM.shape[0])
