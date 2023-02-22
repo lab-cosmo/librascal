@@ -14,6 +14,10 @@ from python_representation_calculator_test import (
     TestSphericalExpansionRepresentation,
     TestSphericalInvariantsRepresentation,
 )
+from python_representation_calculator_mask_test import (
+    TestSphericalExpansionMask
+)
+
 from python_models_test import TestNumericalKernelGradient, TestCosineKernel
 from python_math_test import TestMath
 from test_filter import FPSTest, CURTest
