@@ -417,18 +417,6 @@ namespace rascal {
       n_centers += manager->size();
     }
 
-    // Voigt order is xx, yy, zz, yz, xz, xy. To compute xx, yy, zz
-    // and yz, xz, xy in one loop over the three spatial dimensions
-    // dK/dr_{x,y,z}, we fill the off-diagonals yz, xz, xy by computing
-    // xz, yx, zy exploiting the symmetry of the stress tensor
-    // thus yx=xy and zx=xz
-    // array accessed by voigt_idx and returns spatial_dim_idx
-    //const std::array<std::array<int, 2>, ThreeD> voigt_id_to_spatial_dim = {
-    //    {             // voigt_idx,  spatial_dim_idx
-    //     {{4, 2}},    //    xz,            z
-    //     {{5, 0}},    //    xy,            x
-    //     {{3, 1}}}};  //    yz,            y
-
     internal::Hash<math::Vector_t, double> hasher{};
     auto kernel_type_str = kernel.parameters.at("name").get<std::string>();
     std::string weight_hash = std::to_string(hasher(weights));
@@ -470,31 +458,23 @@ namespace rascal {
       json structure_copy = manager_root->get_atomic_structure();
       auto atomic_structure =
           structure_copy.template get<AtomicStructure<ThreeD>>();
-
-      size_t i_center{0};
+      float volume = atomic_structure.get_volume();
       for (auto center : manager) {
         auto && local_neg_stress = neg_stress[center];
+        local_neg_stress.setZero();
+
         Eigen::Vector3d r_i = center.get_position();
         // accumulate partial gradients onto gradients
         for (auto neigh : center.pairs_with_self_pair()) {
           Eigen::Vector3d r_ji = r_i - neigh.get_position();
-          for (int i_der{0}; i_der < ThreeD; i_der++) {
-            for (int k_der{0}; k_der < ThreeD; k_der++) {
-              // HERE YOU CAN DEBUG
-              local_neg_stress(i_der*3 + k_der) +=
-                  r_ji(i_der) * pair_grad_atom_i_r_j[neigh](k_der);
-
-              // ORIGINAL CODE only using one for-loop ofer i_der
-              //const auto & voigt = voigt_id_to_spatial_dim[i_der];
-              //neg_stress(i_der) +=
-              //    r_ji(i_der) * pair_grad_atom_i_r_j[neigh](i_der);
-              //neg_stress(voigt[0]) +=
-              //    r_ji(voigt[1]) * pair_grad_atom_i_r_j[neigh](i_der);
+          for (int a_der{0}; a_der < ThreeD; a_der++) {
+            for (int b_der{0}; b_der < ThreeD; b_der++) {
+              local_neg_stress(a_der*3 + b_der) +=
+                  r_ji(a_der) * pair_grad_atom_i_r_j[neigh](b_der);
             }
           }
         }
-        local_neg_stress[i_center] /= atomic_structure.get_volume();
-        i_center++;
+        local_neg_stress /= volume;
       }
       neg_stress.set_updated_status(true);
     }  // manager
