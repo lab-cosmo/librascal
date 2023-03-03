@@ -82,6 +82,18 @@ namespace rascal {
             SparsePoints, i.e. the basis used by the sparse method.
             The representation of the atomic structures computed with Calculator
             should have already been computed.)");
+    kernel.def(
+        "compute_local",
+        py::overload_cast<const Calculator &, const StructureManagers &,
+                          const SparsePoints &>(
+            &SparseKernel::template compute<Calculator, StructureManagers,
+                                            SparsePoints>),
+        py::call_guard<py::gil_scoped_release>(),
+        R"(Compute the sparse kernel between the representation of a set of
+            atomic structures, i.e. StructureManagerCollections, and a set of
+            SparsePoints, i.e. the basis used by the sparse method.
+            The representation of the atomic structures computed with Calculator
+            should have already been computed.)");
     kernel.def("compute",
                py::overload_cast<const SparsePoints &>(
                    &SparseKernel::template compute<SparsePoints>),
