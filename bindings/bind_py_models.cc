@@ -203,19 +203,22 @@ namespace rascal {
               calculator, kernel, managers, sparse_points, weights);
           size_t nb_centers_over_managers{0};
           for (const auto & manager : managers) {
-            for (auto center : manager) {
-              nb_centers_over_managers++;
-            }
+            
+            nb_centers_over_managers+=manager->size();
+            //for (auto center : manager) {
+            //  nb_centers_over_managers++;
+            //}
           }
           math::Matrix_t local_neg_stress{nb_centers_over_managers, 9};
 
           size_t i_center{0};
           size_t i_manager_nb_center{0};
           for (const auto & manager : managers) {
-            i_manager_nb_center = 0;
-            for (auto center : manager) {
-              i_manager_nb_center++;
-            }
+            i_manager_nb_center=manager->size();
+            // i_manager_nb_center = 0;
+            // for (auto center : manager) {
+            //   i_manager_nb_center++;
+            // }
             auto && neg_stress{
                 *manager
                     ->template get_property<Property<double, 1, Manager_t, 9>>(

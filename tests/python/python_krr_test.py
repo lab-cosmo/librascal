@@ -1,6 +1,7 @@
 # TMP line for debugging for alex
 import sys
 sys.path.insert(0, "/home/goscinsk/code/librascal-local-stress/build")
+sys.path.insert(0, "/Users/davidetisi/Documents/EPFL_postdoc/librascal/build")
 
 import rascal
 print(rascal.__file__)
