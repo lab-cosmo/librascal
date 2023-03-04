@@ -110,6 +110,7 @@ namespace rascal {
         math::Matrix_t KNM(managers.size(), sparse_points.size());
         KNM.setZero();
         size_t ii_A{0};
+        std::cout<<"inside compute"<<std::endl;
         for (auto & manager : managers) {
           auto && propA{*manager->template get_property<Property_t>(
               representation_name, true)};
@@ -150,13 +151,14 @@ namespace rascal {
         for (const auto & manager : managers) {
             n_centers += manager->size();
         }
+        std::cout<<"centri"<<n_centers<<std::endl;
         math::Matrix_t KNM(n_centers, sparse_points.size());
         KNM.setZero();
         size_t ii_A{0};
         for (auto & manager : managers) {
           auto && propA{*manager->template get_property<Property_t>(
               representation_name, true)};
-          size_t ii_center{0};
+          
           for (auto center : manager) {
             int sp = center.get_atom_type();
             // only the pseudo points of species sp contribute
@@ -166,6 +168,46 @@ namespace rascal {
             ++ii_A;
           }
           
+        }
+        return KNM;
+      }
+
+           /**
+       * Compute the kernel between a set of structure(s) and a set of pseudo
+       * points.
+       *
+       * @tparam StructureManagers should be an iterable over shared pointer
+       *          of structure managers like ManagerCollection
+       * @param sparse_points a SparsePoints* class
+       * @param managers a ManagerCollection or similar collection of
+       * structure managers
+       * @param representation_name name under which the representation data
+       * has been registered in the elements of managers and managers_b
+       * @return kernel matrix
+       */
+      template <class Property_t, internal::TargetType Type,
+                std::enable_if_t<Type == internal::TargetType::Atom, int> = 0,
+                class StructureManagers, class SparsePoints>
+      math::Matrix_t compute_local(const StructureManagers & managers,
+                             const SparsePoints & sparse_points,
+                             const std::string & representation_name) {
+        size_t n_centersA{0};
+        for (const auto & manager : managers) {
+          n_centersA += manager->size();
+        }
+        size_t nb_sparse_points{sparse_points.size()};
+        math::Matrix_t KNM(n_centersA, nb_sparse_points);
+        size_t ii_A{0};
+        for (auto & manager : managers) {
+          auto && propA{*manager->template get_property<Property_t>(
+              representation_name, true)};
+          for (auto center : manager) {
+            int sp = center.get_atom_type();
+            KNM.row(ii_A) =
+                pow_zeta(sparse_points.dot(sp, propA[center]), this->zeta)
+                    .transpose();
+            ii_A++;
+          }
         }
         return KNM;
       }
@@ -702,21 +744,22 @@ namespace rascal {
       using Property_t = typename Calculator::template Property_t<Manager_t>;
       auto && representation_name{calculator.get_name()};
       using internal::TargetType;
-
-      switch (this->target_type) {
-      case TargetType::Structure:
-        return this->compute_local_helper<Property_t, TargetType::Structure>(
-            representation_name, managers, sparse_points);
-      case TargetType::Atom:
-        return this->compute_local_helper<Property_t, TargetType::Atom>(
-            representation_name, managers, sparse_points);
-      default:
-        throw std::logic_error(
-            "Given target_type " +
-            this->parameters["target_type"].get<std::string>() +
-            " is not known."
-            " It is either 'Structure' or 'Atom')");
-      }
+      return this->compute_helper<Property_t, TargetType::Atom>(
+             representation_name, managers, sparse_points);
+      // switch (this->target_type) {
+      // case TargetType::Structure:
+      //   return this->compute_local_helper<Property_t, TargetType::Structure>(
+      //       representation_name, managers, sparse_points);
+      // case TargetType::Atom:
+      //   return this->compute_local_helper<Property_t, TargetType::Atom>(
+      //       representation_name, managers, sparse_points);
+      // default:
+      //   throw std::logic_error(
+      //       "Given target_type " +
+      //       this->parameters["target_type"].get<std::string>() +
+      //       " is not known."
+      //       " It is either 'Structure' or 'Atom')");
+      // }
     }
 
     template <class Property_t, internal::TargetType Type,

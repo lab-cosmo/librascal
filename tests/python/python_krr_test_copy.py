@@ -41,10 +41,38 @@ class TestKRR(unittest.TestCase):
         print("type( self.model.X_tra._sparse_points",type(self.model.X_train._sparse_points))
         #breakpoint()
         #self.model.kernel._kernel.compute(manager.managers,self.model.X_train._sparse_points)
-        self.model.kernel._kernel.compute_local(
-            self.model.kernel._representation,
-            manager.managers,
-            self.model.X_train._sparse_points)
+        #breakpoint()
+        KI = self.model.kernel._kernel.compute(
+                self.model.kernel._representation,
+                manager.managers,
+                self.model.X_train._sparse_points)
+        mmodel = load_obj("../../reference_data/tests_only/simple_gap_model.json")
+        mmodel.kernel.target_type = "Atom"
+        mmodel.target_type = "Atom"
+        print(f"{mmodel.kernel.target_type=}")
+        print(f"{mmodel.target_type=}")
+        
+        mcalculator = mmodel.get_representation_calculator()
+        mmanager = mcalculator.transform(self.frames)
+        
+        KJ = mmodel.kernel._kernel.compute_local(
+                mmodel.kernel._representation,
+                mmanager.managers,
+                mmodel.X_train._sparse_points)
+        
+        ei  = np.dot(KI, self.model.weights)
+        ej  = np.dot(KJ, self.model.weights)
+        
+        print(f'{KI-np.sum(KJ.reshape(-1,10,30),axis=1)=}')
+        print(f'{KI.shape=}')
+        print(f'{KJ.shape=}')
+        print(f'{len(self.frames)=}')
+        print(f'{len(self.frames[0])=}')
+        print(f'{ei.shape=}')
+        print(f'{ei=}')
+        print(f'{ej=}')
+        print(f'{ei - np.sum(ej.reshape(-1,10),axis=1)=}')
+        
 
         # compare to local stress 
         local_stress = self.model.predict_stress(manager, local_stress=True)
@@ -54,7 +82,7 @@ class TestKRR(unittest.TestCase):
         voigt_indices = [(0,0), (1,1), (2,2), (1,2), (0,2), (0,1)]
         local_stress_voigt = np.concatenate([local_stress_matrix[:, i, j].reshape(-1,1) for (i,j) in voigt_indices], axis=1)
         for i in range(len(self.frames)):
-            print(global_stress[i],np.sum(local_stress_voigt[self.structure_starting_indices[i]:self.structure_starting_indices[i+1]], axis=0))
+            #print(global_stress[i],np.sum(local_stress_voigt[self.structure_starting_indices[i]:self.structure_starting_indices[i+1]], axis=0))
             self.assertTrue(
                 np.allclose(global_stress[i],
                 np.sum(local_stress_voigt[self.structure_starting_indices[i]:self.structure_starting_indices[i+1]], axis=0)))

@@ -460,14 +460,14 @@ namespace rascal {
           structure_copy.template get<AtomicStructure<ThreeD>>();
       float volume = atomic_structure.get_volume();
       for (auto center : manager) {
-        // auto && local_neg_stress = neg_stress[center];
-        //local_neg_stress.setZero();
+        auto && local_neg_stress = neg_stress[center];
+        local_neg_stress.setZero();
 
         Eigen::Vector3d r_i = center.get_position();
         // accumulate partial gradients onto gradients
         for (auto neigh : center.pairs_with_self_pair()) {
-          auto && local_neg_stress = neg_stress[neigh.get_atom_j()];
-          local_neg_stress.setZero();
+          //auto && local_neg_stress = neg_stress[neigh.get_atom_j()];
+          //local_neg_stress.setZero();
           Eigen::Vector3d r_ji = r_i - neigh.get_position();
           for (int a_der{0}; a_der < ThreeD; a_der++) {
             for (int b_der{0}; b_der < ThreeD; b_der++) {

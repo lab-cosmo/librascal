@@ -86,7 +86,7 @@ namespace rascal {
         "compute_local",
         py::overload_cast<const Calculator &, const StructureManagers &,
                           const SparsePoints &>(
-            &SparseKernel::template compute<Calculator, StructureManagers,
+            &SparseKernel::template compute_local<Calculator, StructureManagers,
                                             SparsePoints>),
         py::call_guard<py::gil_scoped_release>(),
         R"(Compute the sparse kernel between the representation of a set of
