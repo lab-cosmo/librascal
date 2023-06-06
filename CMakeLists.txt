@@ -22,7 +22,7 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
 
 message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 
-project(rascal CXX)
+project(rascal C CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

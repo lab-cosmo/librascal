@@ -6,15 +6,23 @@ download_external_project(wigxjpf
     URL "https://github.com/lab-cosmo/wigxjpf/archive/refs/tags/${_wigxjpf_version}.tar.gz"
     BACKEND NONE
     THIRD_PARTY_SRC_DIR ${_wigxjpf_external_dir}
-    BUILD_COMMAND "make -C ${SOURCE_DIR}"
+    BUILD_COMMAND "true"
     ${_wigxjpf_update}
 )
 
-add_library("${WIGXJPF_NAME}" STATIC IMPORTED)
+file(WRITE ${SOURCE_DIR}/cfg/wigxjpf_auto_config.h "")
 
-set_target_properties("${WIGXJPF_NAME}" PROPERTIES
-    IMPORTED_LOCATION ${SOURCE_DIR}/lib/libwigxjpf.a
-    INTERFACE_INCLUDE_DIRECTORIES "${SOURCE_DIR}/inc;${SOURCE_DIR}/cfg"
+set(WIGXJPF_SOURCES
+    ${SOURCE_DIR}/src/c_wrap.c
+    ${SOURCE_DIR}/src/calc.c
+    ${SOURCE_DIR}/src/prime_factor.c
+    ${SOURCE_DIR}/src/trivial_zero.c
+)
+add_library("${WIGXJPF_NAME}" OBJECT ${WIGXJPF_SOURCES})
+
+target_include_directories("${WIGXJPF_NAME}" PUBLIC
+    ${SOURCE_DIR}/inc
+    ${SOURCE_DIR}/cfg
 )
 
-add_dependencies("${WIGXJPF_NAME}" wigxjpf)
+set_target_properties("${WIGXJPF_NAME}" PROPERTIES POSITION_INDEPENDENT_CODE ON)
