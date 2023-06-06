@@ -28,8 +28,7 @@ if(NOT APPLE AND UNIX)
   # `$ORIGIN/../../src` should allow to link libraries from the build folder
   # `$ORIGIN/../../lib` accommodates installation with
   # `python setup.py install'
-  set(BINDNIGS_INSTALL_RPATH "$ORIGIN/../../../../" "$ORIGIN/../../lib"
-                          "$ORIGIN/../../src" "$ORIGIN/../src")
+  set(BINDINGS_INSTALL_RPATH "$ORIGIN")
 elseif(APPLE)
   set(MACOSX_RPATH ON)
   # this link path accommodates most installations
@@ -38,11 +37,10 @@ elseif(APPLE)
   # `@loader_path/../../src` should allow to link libraries from the build folder
   # `@loader_path/../../lib` accommodates installation with
   # `python setup.py install'
-  set(BINDNIGS_INSTALL_RPATH "@loader_path/../../../../" "@loader_path/../../lib"
-                          "@loader_path/../../src" "@loader_path/../src")
+  set(BINDINGS_INSTALL_RPATH "@loader_path")
 endif()
 
-set_target_properties(_rascal PROPERTIES INSTALL_RPATH "${BINDNIGS_INSTALL_RPATH}")
+set_target_properties(_rascal PROPERTIES INSTALL_RPATH "${BINDINGS_INSTALL_RPATH}")
 
 # Normal installation procedure
 # copy rascal folder in the python distribution
@@ -53,6 +51,7 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal" DESTINATION "${CMAKE_INST
     PATTERN "*.dylib" EXCLUDE
 )
 install(TARGETS _rascal DESTINATION "${CMAKE_INSTALL_PREFIX}/bindings/rascal/lib")
+install(TARGETS ${LIBRASCAL_NAME} DESTINATION "${CMAKE_INSTALL_PREFIX}/bindings/rascal/lib")
 
 # Copy the python wrappers in the build folder
 # Copy the resulting bindings lib in the python wrapper lib folder
@@ -62,6 +61,8 @@ add_custom_target(copy_python_bindings ALL
         ${CMAKE_CURRENT_SOURCE_DIR}/rascal ${CMAKE_BINARY_DIR}/rascal
     COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_CURRENT_BINARY_DIR}/_rascal.* ${CMAKE_BINARY_DIR}/rascal/lib/
+    COMMAND ${CMAKE_COMMAND} -E copy
+        $<TARGET_FILE:${LIBRASCAL_NAME}> ${CMAKE_BINARY_DIR}/rascal/lib/
     DEPENDS _rascal
     COMMENT "Copying python bindings and libraries"
 )

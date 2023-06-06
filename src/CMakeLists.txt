@@ -21,4 +21,6 @@ target_include_directories(${LIBRASCAL_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${LIBRASCAL_NAME} PUBLIC Eigen3::Eigen)
 target_link_libraries(${LIBRASCAL_NAME} PUBLIC ${WIGXJPF_NAME})
 
-install(TARGETS ${LIBRASCAL_NAME} DESTINATION lib)
+if(NOT SKBUILD)
+    install(TARGETS ${LIBRASCAL_NAME} DESTINATION lib)
+endif()

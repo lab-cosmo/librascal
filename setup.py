@@ -36,6 +36,6 @@ setup(
     packages=find_packages(where="bindings"),
     install_requires=requirements,
     # include_package_data=True,
-    package_data={"": ["lib/librascal.*"]},
+    # package_data={"": ["lib/librascal.*"]},
     zip_safe=False,
 )
