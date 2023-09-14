@@ -93,7 +93,7 @@ The following packages are required for some optional features:
 +--------------------------+-------------+--------------------+
 | Feature                  | Package     | Required version   |
 +==========================+=============+====================+
-| Feature compression      | skcosmo     | 0.1.0 or later     |
+| Feature compression      | skmatter     | 0.1.0 or later     |
 +--------------------------+-------------+--------------------+
 | Rotational algebra       | sympy       | 1.4 or later       |
 | (Clebsch-Gordan coeffs.) |             |                    |

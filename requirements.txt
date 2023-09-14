@@ -3,7 +3,7 @@ numpy
 scipy
 jupyter
 sympy>=1.4
-skcosmo
+skmatter
 # notebook tutorials
 matplotlib
 # Developers tools for compiling documentation
