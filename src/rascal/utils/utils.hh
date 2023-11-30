@@ -35,6 +35,7 @@
 #include <typeinfo>
 #include <utility>
 #include <vector>
+#include <cstdint>
 
 namespace rascal {
   namespace internal {
