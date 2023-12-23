@@ -8,7 +8,11 @@ Public functions:
     train_gap_model         Train a GAP model given a kernel matrix and sparse points
 """
 from ..utils import BaseIO
-from ..lib import compute_sparse_kernel_gradients, compute_sparse_kernel_neg_stress
+from ..lib import (
+    compute_sparse_kernel_gradients,
+    compute_sparse_kernel_neg_stress,
+    compute_sparse_kernel_local_neg_stress
+)
 
 import scipy
 import numpy as np
@@ -352,7 +356,7 @@ class KRR(BaseIO):
 
         return -gradients
 
-    def predict_stress(self, managers, KNM=None):
+    def predict_stress(self, managers, KNM=None, local_stress=False):
         """Predict gradients w.r.t cell parameters, e.g. stress, associated with the atomic structures in managers.
         The stress is returned using the Voigt order: xx, yy, zz, yz, xz, xy.
 
@@ -376,14 +380,26 @@ class KRR(BaseIO):
 
         if KNM is None:
             rep = self.kernel._representation
-            neg_stress = compute_sparse_kernel_neg_stress(
-                rep,
-                self.kernel._kernel,
-                managers.managers,
-                self.X_train._sparse_points,
-                self.weights.reshape((1, -1)),
-            )
+            if local_stress:
+                neg_stress = compute_sparse_kernel_local_neg_stress(
+                    rep,
+                    self.kernel._kernel,
+                    managers.managers,
+                    self.X_train._sparse_points,
+                    self.weights.reshape((1, -1)),
+                )
+            else:
+                neg_stress = compute_sparse_kernel_neg_stress(
+                    rep,
+                    self.kernel._kernel,
+                    managers.managers,
+                    self.X_train._sparse_points,
+                    self.weights.reshape((1, -1)),
+                )
         else:
+            if local_stress:
+                raise ValueError("Option local_stress does not work with KNM."
+                                 " Please set KNM to None.")
             if 6 * len(managers) != KNM.shape[0]:
                 raise ValueError(
                     "KNM size mismatch {}!={}".format(6 * len(managers), KNM.shape[0])

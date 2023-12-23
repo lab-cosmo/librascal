@@ -82,6 +82,18 @@ namespace rascal {
             SparsePoints, i.e. the basis used by the sparse method.
             The representation of the atomic structures computed with Calculator
             should have already been computed.)");
+    kernel.def(
+        "compute_local",
+        py::overload_cast<const Calculator &, const StructureManagers &,
+                          const SparsePoints &>(
+            &SparseKernel::template compute_local<Calculator, StructureManagers,
+                                            SparsePoints>),
+        py::call_guard<py::gil_scoped_release>(),
+        R"(Compute the sparse kernel between the representation of a set of
+            atomic structures, i.e. StructureManagerCollections, and a set of
+            SparsePoints, i.e. the basis used by the sparse method.
+            The representation of the atomic structures computed with Calculator
+            should have already been computed.)");
     kernel.def("compute",
                py::overload_cast<const SparsePoints &>(
                    &SparseKernel::template compute<SparsePoints>),
@@ -191,6 +203,43 @@ namespace rascal {
             i_manager++;
           }
           return neg_stress_global;
+        },
+        py::call_guard<py::gil_scoped_release>());
+
+    mod.def(
+        "compute_sparse_kernel_local_neg_stress",
+        [](const Calculator & calculator, SparseKernel & kernel,
+           ManagerCollection & managers, SparsePoints & sparse_points,
+           math::Vector_t & weights) {
+          std::string neg_stress_name = compute_sparse_kernel_local_neg_stress(
+              calculator, kernel, managers, sparse_points, weights);
+          size_t nb_centers_over_managers{0};
+          for (const auto & manager : managers) {
+            
+            nb_centers_over_managers+=manager->size();
+            //for (auto center : manager) {
+            //  nb_centers_over_managers++;
+            //}
+          }
+          math::Matrix_t local_neg_stress{nb_centers_over_managers, 9};
+
+          size_t i_center{0};
+          size_t i_manager_nb_center{0};
+          for (const auto & manager : managers) {
+            i_manager_nb_center=manager->size();
+            // i_manager_nb_center = 0;
+            // for (auto center : manager) {
+            //   i_manager_nb_center++;
+            // }
+            auto && neg_stress{
+                *manager
+                    ->template get_property<Property<double, 1, Manager_t, 9>>(
+                        neg_stress_name, true, true, true)};
+            local_neg_stress.block(i_center, 0, i_manager_nb_center, 9) =
+                Eigen::Map<const math::Matrix_t>(neg_stress.view().data(), 1, 9);
+            i_center += i_manager_nb_center;
+          }
+          return local_neg_stress;
         },
         py::call_guard<py::gil_scoped_release>());
   }
