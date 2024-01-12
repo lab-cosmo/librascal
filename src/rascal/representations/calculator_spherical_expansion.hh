@@ -403,8 +403,7 @@ namespace rascal {
       void precompute() override {
         this->precompute_radial_sigmas();
         this->precompute_radial_overlap();
-        this->ortho_norm_matrix =
-            this->radial_norm_factors.asDiagonal() * this->radial_ortho_matrix;
+        this->ortho_norm_matrix = this->radial_ortho_matrix;
 
         this->hyp1f1_calculator.precompute(this->max_radial, this->max_angular);
       }
@@ -655,14 +654,8 @@ namespace rascal {
             overlap(radial_n1, radial_n2) =
                 pow(0.5 / pow(this->radial_sigmas[radial_n1], 2) +
                         0.5 / pow(this->radial_sigmas[radial_n2], 2),
-                    -0.5 * (3.0 + radial_n1 + radial_n2)) /
-                (pow(this->radial_sigmas[radial_n1], radial_n1) *
-                 pow(this->radial_sigmas[radial_n2], radial_n2)) *
-                tgamma(0.5 * (3.0 + radial_n1 + radial_n2)) /
-                (pow(this->radial_sigmas[radial_n1] *
-                         this->radial_sigmas[radial_n2],
-                     1.5) *
-                 sqrt(tgamma(1.5 + radial_n1) * tgamma(1.5 + radial_n2)));
+                    -0.5 * (3.0 + radial_n1 + radial_n2)) *  
+                tgamma(0.5 * (3.0 + radial_n1 + radial_n2)) * 0.5;
           }
         }
         // Compute the inverse square root of the overlap matrix
