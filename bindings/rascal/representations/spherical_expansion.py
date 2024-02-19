@@ -136,6 +136,12 @@ class SphericalExpansion(BaseIO):
         should contain all the species present in the structure for which
         invariants will be computed
 
+    central_species : list
+        list of central atom species that are only computed
+        
+    neighbour_species : list
+        list of neighbour atom species that are only computed
+
     compute_gradients : bool
         control the computation of the representation's gradients w.r.t. atomic
         positions.
@@ -178,6 +184,8 @@ class SphericalExpansion(BaseIO):
         optimization_args=None,
         expansion_by_species_method="environment wise",
         global_species=None,
+        central_species=None,
+        neighbour_species=None,
         compute_gradients=False,
         cutoff_function_parameters=dict(),
     ):
@@ -195,11 +203,23 @@ class SphericalExpansion(BaseIO):
         elif not isinstance(global_species, list):
             global_species = list(global_species)
 
+        if neighbour_species is None:
+            neighbour_species = []
+        elif not isinstance(neighbour_species, list):
+            neighbour_species = list(neighbour_species)
+
+        if central_species is None:
+            central_species = []
+        elif not isinstance(central_species, list):
+            central_species = list(central_species)
+
         self.update_hyperparameters(
             max_radial=max_radial,
             max_angular=max_angular,
             expansion_by_species_method=expansion_by_species_method,
             global_species=global_species,
+            central_species=central_species,
+            neighbour_species=neighbour_species,
             compute_gradients=compute_gradients,
         )
         self.cutoff_function_parameters = deepcopy(cutoff_function_parameters)
@@ -258,6 +278,8 @@ class SphericalExpansion(BaseIO):
             "cutoff_function_parameters",
             "expansion_by_species_method",
             "global_species",
+            "central_species",
+            "neighbour_species",
         }
         hypers_clean = {key: hypers[key] for key in hypers if key in allowed_keys}
         self.hypers.update(hypers_clean)
@@ -310,6 +332,8 @@ class SphericalExpansion(BaseIO):
             max_angular=self.hypers["max_angular"],
             expansion_by_species_method=self.hypers["expansion_by_species_method"],
             global_species=self.hypers["global_species"],
+            central_species=self.hypers["central_species"],
+            neighbour_species=self.hypers["neighbour_species"],
             compute_gradients=self.hypers["compute_gradients"],
             gaussian_sigma_type=gaussian_density["type"],
             gaussian_sigma_constant=gaussian_density["gaussian_sigma"]["value"],
